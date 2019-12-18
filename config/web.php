@@ -206,10 +206,7 @@ $config = [
             ],
         ],
         'db' => require(__DIR__.'/db.php'),
-        'db_siakad' => require(__DIR__.'/db_siakad.php'),
-        'db_simpeg' => require(__DIR__.'/db_simpeg.php'),
-        'db_ukt' => require(__DIR__.'/db_ukt.php'),
-        /*
+         /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
