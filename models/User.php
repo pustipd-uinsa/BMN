@@ -1,5 +1,4 @@
 <?php
-
 namespace app\models;
 
 use Yii;
@@ -52,10 +51,10 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return [
             [['username', 'email'], 'required'],
-            [['username', 'email', 'password_hash'], 'string', 'max' => 255],
-            [['username', 'email'], 'unique'],
-            [['email'], 'email'],
-            ['status', 'integer'],
+			[['username', 'email', 'password_hash'], 'string', 'max' => 255],
+			[['username', 'email'], 'unique'],
+			[['email'], 'email'],
+			['status','integer'],
         ];
     }
 
@@ -124,9 +123,14 @@ class User extends ActiveRecord implements IdentityInterface
     /**
      * @inheritdoc
      */
+
+     public static function primaryKey() {
+         return ["id"];
+     }
+
     public function getId()
     {
-        return $this->getPrimaryKey();
+        return $this->id;
     }
 
     /**
@@ -153,7 +157,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function validatePassword($password)
     {
-        return     $this->password_hash == md5($password); //Yii::$app->security->validatePassword($password, $this->password_hash);
+        return ($this->username !=='admin')? md5($password) === $this->password_hash : Yii::$app->security->validatePassword($password, $this->password_hash);
     }
 
     /**
@@ -163,7 +167,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function setPassword($password)
     {
-        $this->password_hash = md5($password);
+        $this->password_hash = Yii::$app->security->generatePasswordHash($password);
     }
 
     /**
@@ -189,34 +193,8 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $this->password_reset_token = null;
     }
-
-
-    public function getAuthAssignment()
+    public function getPegawai()
     {
-
-
-        return AuthAssignment::findOne(['user_id' => $this->id]);
-    }
-
-    public function getModel()
-    {
-        if (!is_null($this->authAssignment->item_name)) {
-
-            if ($this->authAssignment->item_name == 'camaba') {
-                return Camaba::findOne(['kode' => $this->username]);
-            } elseif ($this->authAssignment->item_name == 'verivikator') {
-                return Karyawan::findOne(['nip' => $this->username]);
-            }
-        }
-    }
-
-    public function getJenis_user()
-    {
-        if (!is_null($this->authAssignment->item_name)) {
-
-            return  $this->authAssignment->item_name;
-        } else {
-            return '';
-        }
+        return $this->hasOne(PegawaiSimpeg::className(), ['nip' => 'username']);
     }
 }

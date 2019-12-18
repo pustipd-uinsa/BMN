@@ -4,10 +4,9 @@ namespace app\models;
 
 use Yii;
 use yii\base\Model;
-use app\models\Mahasiswa;
 
 /**
- * Login form.
+ * LoginForm is the model behind the login form.
  */
 class LoginForm extends Model
 {
@@ -15,10 +14,11 @@ class LoginForm extends Model
     public $password;
     public $rememberMe = true;
 
-    private $_user;
+    private $_user = false;
+
 
     /**
-     * {@inheritdoc}
+     * @return array the validation rules.
      */
     public function rules()
     {
@@ -32,65 +32,44 @@ class LoginForm extends Model
         ];
     }
 
-
-    public function attributeLabels()
-    {
-        return [
-            'id' => Yii::t('app', 'ID'),
-            'username' => Yii::t('app', 'username'),
-            'password' => Yii::t('app', 'Password'),
-        ];
-    }
-
     /**
      * Validates the password.
      * This method serves as the inline validation for password.
      *
      * @param string $attribute the attribute currently being validated
-     * @param array  $params    the additional name-value pairs given in the rule
+     * @param array $params the additional name-value pairs given in the rule
      */
     public function validatePassword($attribute, $params)
     {
         if (!$this->hasErrors()) {
             $user = $this->getUser();
+
             if (!$user || !$user->validatePassword($this->password)) {
-                if (!$user) {
-                    $this->addError($attribute, 'No.Pendaftaran Tidak Ditemukan');
-                } else {
-                    $this->addError($attribute, 'Kombinasi No.Pendaftaran dan Password Salah');
-                }
+                $this->addError($attribute, 'Incorrect username or password.');
             }
         }
     }
 
     /**
      * Logs in a user using the provided username and password.
-     *
-     * @return bool whether the user is logged in successfully
+     * @return boolean whether the user is logged in successfully
      */
     public function login()
     {
         if ($this->validate()) {
-            if (date('Y-m-d') < Yii::$app->params['tanggalDaftarAwal'] || date('Y-m-d') > Yii::$app->params['tanggalDaftarAkhir']) {
-               //   Yii::$app->session->setFlash('error', 'Pendaftaran Masih Ditutup');
-               // return false;
-                return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600 * 24 * 30 : 0);
-            } else {
-                return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600 * 24 * 30 : 0);
-            }
-        } else {
-            return false;
+            return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600*24*30 : 0);
         }
+        return false;
     }
 
     /**
-     * Finds user by [[username]].
+     * Finds user by [[username]]
      *
      * @return User|null
      */
-    protected function getUser()
+    public function getUser()
     {
-        if ($this->_user === null) {
+        if ($this->_user === false) {
             $this->_user = User::findByUsername($this->username);
         }
 
